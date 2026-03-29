@@ -1,12 +1,12 @@
 # TurboQuant
 
-Python implementation of **TurboQuant: Online Vector Quantization with Near-optimal Distortion Rate** (Zandieh, Daliri, Hadian, Mirrokni — arXiv 2504.19874, 2025).
+Python implementation of **TurboQuant: Online Vector Quantization with Near-optimal Distortion Rate** (Zandieh, Daliri, Hadian, Mirrokni - arXiv 2504.19874, 2025).
 
 TurboQuant compresses high-dimensional vectors to low-bitwidth integers while keeping distortion within a small constant factor of the information-theoretic minimum. It is data-oblivious: no calibration data, no preprocessing, no codebook training. The same quantizer works on any input distribution.
 
 ## What it solves
 
-Most vector quantizers make a trade-off: either they need offline calibration (k-means codebooks, Hessian-based methods) or they use simple uniform grids that are far from optimal. TurboQuant sits in a different position — it is both online (no data needed) and provably near-optimal (within factor ≈2.7 of Shannon's distortion-rate bound).
+Most vector quantizers make a trade-off: either they need offline calibration (k-means codebooks, Hessian-based methods) or they use simple uniform grids that are far from optimal. TurboQuant sits in a different position - it is both online (no data needed) and provably near-optimal (within factor ≈2.7 of Shannon's distortion-rate bound).
 
 The two primary use cases are:
 
@@ -16,11 +16,11 @@ The two primary use cases are:
 
 ## How it works
 
-**Step 1 — Random rotation.** Multiply the input vector by a Haar-distributed orthogonal matrix Π. After rotation, each coordinate follows a Beta distribution regardless of the original input. This is the key move: it turns a worst-case input into a statistically predictable one.
+**Step 1 - Random rotation.** Multiply the input vector by a Haar-distributed orthogonal matrix Π. After rotation, each coordinate follows a Beta distribution regardless of the original input. This is the key move: it turns a worst-case input into a statistically predictable one.
 
-**Step 2 — Lloyd-Max scalar quantization.** Because coordinates are now approximately i.i.d. Beta (converging to Gaussian in high dimensions), and because distinct coordinates become nearly independent, we can quantize each coordinate independently with an optimal 1D scalar quantizer. The Lloyd-Max algorithm solves this once for the Beta distribution; the resulting codebook is precomputed and cached.
+**Step 2 - Lloyd-Max scalar quantization.** Because coordinates are now approximately i.i.d. Beta (converging to Gaussian in high dimensions), and because distinct coordinates become nearly independent, we can quantize each coordinate independently with an optimal 1D scalar quantizer. The Lloyd-Max algorithm solves this once for the Beta distribution; the resulting codebook is precomputed and cached.
 
-**Step 3 (inner-product variant only) — QJL residual correction.** MSE-optimal quantizers are biased for inner-product estimation. To fix this, TurboQuantProd applies a 1-bit Quantized Johnson-Lindenstrauss transform to the residual after the MSE step. This corrects the bias at the cost of one extra bit per coordinate, giving an unbiased inner-product estimator.
+**Step 3 (inner-product variant only) - QJL residual correction.** MSE-optimal quantizers are biased for inner-product estimation. To fix this, TurboQuantProd applies a 1-bit Quantized Johnson-Lindenstrauss transform to the residual after the MSE step. This corrects the bias at the cost of one extra bit per coordinate, giving an unbiased inner-product estimator.
 
 ## Theoretical guarantees
 
@@ -32,7 +32,7 @@ For any unit-norm input vector x ∈ ℝᵈ and bitwidth b:
 E[‖x − x̂‖²] ≤ (√3π / 2) · 4^{−b}
 ```
 
-At b = 1, 2, 3, 4 the empirical values are 0.36, 0.117, 0.03, 0.009 — matching the paper exactly.
+At b = 1, 2, 3, 4 the empirical values are 0.36, 0.117, 0.03, 0.009 - matching the paper exactly.
 
 **Inner-product distortion** (TurboQuantProd, Theorem 2):
 
@@ -41,7 +41,7 @@ E[⟨y, x⟩ − ⟨y, x̂⟩]  = 0          (unbiased)
 Var[⟨y, x̂⟩]          ≤ (√3π / 2) · ‖y‖² / d · 4^{−b}
 ```
 
-**Lower bound** (Theorem 3): no quantizer — regardless of design — can achieve MSE below 4^{−b}. TurboQuant is within factor √3π/2 ≈ 2.7 of this limit at all bitwidths.
+**Lower bound** (Theorem 3): no quantizer - regardless of design - can achieve MSE below 4^{−b}. TurboQuant is within factor √3π/2 ≈ 2.7 of this limit at all bitwidths.
 
 ## Install
 
@@ -69,7 +69,7 @@ Compress a database once. Query against the compressed version at full speed.
 import numpy as np
 from turboquant.main.prod import TurboQuantProd
 
-# Unit-norm vectors required — normalize if your embeddings are not already
+# Unit-norm vectors required - normalize if your embeddings are not already
 X = np.random.randn(100_000, 256)
 X /= np.linalg.norm(X, axis=1, keepdims=True)
 
@@ -86,7 +86,7 @@ scores = query @ X_hat.T
 topk   = np.argsort(-scores)[:10]
 ```
 
-At 4-bit, memory drops from 16 bits/coordinate (fp16) to 4 bits — a 4× reduction with unbiased inner-product estimates.
+At 4-bit, memory drops from 16 bits/coordinate (fp16) to 4 bits - a 4× reduction with unbiased inner-product estimates.
 
 ### Streaming KV-cache
 
@@ -97,7 +97,7 @@ from turboquant.main.mse import TurboQuantMSE
 
 tq = TurboQuantMSE(dim=128, bits=3)
 
-# During generation — one key per token
+# During generation - one key per token
 for key_vec in incoming_keys:
     idx = tq.quantize(key_vec[np.newaxis])   # shape (1, dim)
     cache.append(idx)                         # store 3 bits/coordinate
@@ -131,7 +131,7 @@ python -m turboquant.experiments.nearest_neighbor
 python -m turboquant.experiments.kv_cache_simulation
 ```
 
-A note on the nearest-neighbour comparison: NaiveQuant is given 500 calibration vectors to fit its clipping range; TurboQuant uses none. Despite this, TurboQuant matches or beats naive at 2-bit. At 4-bit on perfectly Gaussian unit-sphere data, a well-tuned uniform grid is competitive — the paper's advantage at that bitwidth comes from the worst-case guarantee and the absence of calibration, not from outperforming every heuristic on every distribution.
+A note on the nearest-neighbour comparison: NaiveQuant is given 500 calibration vectors to fit its clipping range; TurboQuant uses none. Despite this, TurboQuant matches or beats naive at 2-bit. At 4-bit on perfectly Gaussian unit-sphere data, a well-tuned uniform grid is competitive - the paper's advantage at that bitwidth comes from the worst-case guarantee and the absence of calibration, not from outperforming every heuristic on every distribution.
 
 ## Package layout
 
@@ -139,9 +139,9 @@ A note on the nearest-neighbour comparison: NaiveQuant is given 500 calibration 
 turboquant/
   __init__.py                  exports TurboQuantMSE, TurboQuantProd, QJL
   main/
-    mse.py                     TurboQuantMSE  — Algorithm 1 (MSE-optimal)
-    prod.py                    TurboQuantProd — Algorithm 2 (unbiased IP)
-    qjl.py                     QJL            — 1-bit inner-product quantizer
+    mse.py                     TurboQuantMSE  - Algorithm 1 (MSE-optimal)
+    prod.py                    TurboQuantProd - Algorithm 2 (unbiased IP)
+    qjl.py                     QJL            - 1-bit inner-product quantizer
     lloyd_max.py               Lloyd-Max solver for Beta/Gaussian distribution
     rotation.py                Haar-distributed random rotation (QR decomposition)
     caching.py                 Global codebook cache keyed by (d, b)
@@ -157,7 +157,7 @@ examples/
 
 ## Known limitations
 
-**Rotation cost.** Generating the rotation matrix is O(d³) via QR decomposition and storing it is O(d²). For large dimensions (d > 4096) a structured randomized Hadamard transform would be more practical — this is not implemented here.
+**Rotation cost.** Generating the rotation matrix is O(d³) via QR decomposition and storing it is O(d²). For large dimensions (d > 4096) a structured randomized Hadamard transform would be more practical - this is not implemented here.
 
 **No GPU path.** All operations are NumPy. The algorithm is trivially parallelisable across vectors but this implementation does not use CUDA.
 
