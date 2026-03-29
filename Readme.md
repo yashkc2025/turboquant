@@ -22,26 +22,6 @@ The two primary use cases are:
 
 **Step 3 (inner-product variant only) — QJL residual correction.** MSE-optimal quantizers are biased for inner-product estimation. To fix this, TurboQuantProd applies a 1-bit Quantized Johnson-Lindenstrauss transform to the residual after the MSE step. This corrects the bias at the cost of one extra bit per coordinate, giving an unbiased inner-product estimator.
 
-## Metrics
-
-### MSE distortion vs bitwidth
-
-![MSE distortion vs bitwidth](./images/fig1_mse_bounds.png)
-
-Caption: Empirical MSE of TurboQuantMSE on 3,000 unit-norm vectors (d = 512), plotted alongside the information-theoretic lower bound 4^{−b} (Theorem 3) and the Panter-Dite upper bound (Theorem 1). The shaded region is the achievable gap. Empirical values: 0.36, 0.117, 0.03, 0.009 at b = 1–4, matching the paper exactly.
-
-### Inner-product error distributions
-
-![Inner-product error distributions](./images/fig2_ip_distributions.png)
-
-Caption: Distribution of inner-product estimation error ⟨y, x⟩ − ⟨y, x̂⟩ across 3,000 vectors at four bitwidths. TurboQuantProd (blue, top) is centred at zero at all bitwidths — it is unbiased by construction. TurboQuantMSE (amber, bottom) is biased at low bitwidth because MSE-optimal quantizers apply a multiplicative factor of 2/π to inner products at b = 1. The bias vanishes as b increases.
-
-### Nearest-neighbour recall vs top-k
-
-![Nearest-neighbour recall vs top-k](./images/fig3_recall.png)
-
-Caption: Recall@k on a 5,000-vector database (d = 256) at 2-bit and 4-bit compression. NaiveQuant is given 500 calibration vectors to fit its clipping range; TurboQuant uses none. At 2-bit, TurboQuant's Lloyd-Max codebook outperforms the calibrated uniform grid across all k. At 4-bit on this near-Gaussian data both methods are competitive — TurboQuant's primary advantage at that bitwidth is the absence of any calibration requirement.
-
 ## Theoretical guarantees
 
 For any unit-norm input vector x ∈ ℝᵈ and bitwidth b:
